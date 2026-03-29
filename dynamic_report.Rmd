@@ -1,0 +1,136 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+
+```
+
+```{css}
+h2 {
+  background-color: #F0F8FF;
+  padding: 10px;
+  font-family: "Times New Roman", serif;
+  display: inline-block;
+}
+
+h3 {
+  background-color: #F0F8FF;
+  padding: 10px;
+  font-family: "Times New Roman", serif;
+  display: inline-block;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500
+}
+```
+
+## Exploring the screen time usage and productivity levels among students at the University of Auckland
+
+A group of students that are taking STATS 220 wanted to investigate the screen time usage and productivity levels during a five day period at university. In our google form we sent to students, the number of hours spent at university and assignments due were also recorded. 
+
+<img src="https://www.auckland.ac.nz/content/auckland/en/news/2025/04/15/refreshed-university-logo-unifies-brand/_jcr_content/leftpar/imagecomponent/image.img.480.low.jpg/1744667894355.jpg" width="300">
+
+In this report we are:
+
+1. Exploring the screen time usage levels for university students
+2. Exploring the productivity levels for university students
+
+
+
+```{r}
+
+library(tidyverse)
+
+logged_data <- read_csv(
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyMuuJGdgPQKIn5Yu0SEmC_p6-Cb6GlP4981E_vJBrG4UJdoLjYsaYZUKI0T8vKZlLIgkgYB05Nd6p/pub?gid=495879699&single=true&output=csv")
+
+latest_data <- logged_data %>%
+  rename(
+    Hours_at_University = 2,
+    Assignments_Due = 4,
+    Screen_Time_Range = 5,
+    Productivity_Level = 6
+    ) %>%
+  select(Hours_at_University, Assignments_Due, Screen_Time_Range, Productivity_Level) %>%
+  mutate(Screen_Time_Range = factor(
+    Screen_Time_Range,
+    levels = c(
+      "Low (less than 2 hours)", "Medium (2-5 hours)", "High (more than 5 hours)"
+      )
+    ),
+    Productivity_Level = factor(
+      Productivity_Level,
+      levels = c("Very unproductive",
+                 "Somewhat unproductive",
+                 "Neutral (neither productive nor unproductive)",
+                 "Somewhat productive", 
+                 "Very productive"
+                 )
+      )
+    )
+
+median_uni_hours <- median(latest_data$Hours_at_University)
+median_assignments <- median(latest_data$Assignments_Due)
+
+latest_data %>%
+  ggplot(aes(x = Screen_Time_Range, fill = Screen_Time_Range)) +
+  geom_bar() +
+  scale_fill_brewer(palette = "GnBu") +
+  scale_x_discrete(labels = c(
+    "High (more than 5 hours)" = "High",
+    "Low (less than 2 hours)" = "Low",
+    "Medium (2-5 hours)" = "Medium"
+  )) +
+  labs(
+    x = "Screen Time Range",
+    y = "Count",
+    fill = "Screen Time Range"
+  ) +
+  theme_classic() +
+  theme(axis.ticks = element_blank())
+
+latest_data %>%
+  ggplot(aes(x = Productivity_Level, fill = Productivity_Level)) +
+  geom_bar() +
+  scale_fill_brewer(palette = "GnBu") +
+  scale_x_discrete(labels = c(
+    "Very unproductive" = "Very\nunprod",
+    "Somewhat unproductive" = "Somewhat\nunprod",
+    "Neutral (neither productive nor unproductive)" = "Neutral",
+    "Somewhat productive" = "Somewhat\nprod",
+    "Very productive" = "Very\nprod"
+  )) +
+  labs(
+    x = "Productivity Level",
+    y = "Count",
+    fill = "Productivity Level"
+  ) +
+  theme_classic() +
+  theme(axis.ticks = element_blank())
+
+```
+
+### Summary values and insights
+
+The median number of hours spent at university was `r median_uni_hours` hours, suggesting that a typical student spends a moderately low time on campus each day during the observed period. 
+
+The median number of assignments due was `r  median_assignments` assignment, indicating that students generally had a low academic workload during the observed period.
+
+The most common screen time category among students was medium, indicating that most students spend a moderate to high amount of time on screens. The low category had noticeably fewer students, while high screen time was similar in frequency to medium. Productivity levels were most commonly reported as somewhat productive, suggesting that students generally felt moderately productive during their university days. The next most common levels were neutral and very productive, although these were considerably lower in comparison.
+
+Overall, the results suggest that students tend to have medium to high screen time usage, while productivity levels are generally positive, with relatively few students reporting being unproductive.
+
+The relatively low median hours spent at university may suggest that students are not spending extended periods of time on campus. This could help explain the higher screen time usage observed, as students may spend more time outside of university engaging in screen based activities. Similarly, the number of assignments due may influence productivity levels. Although the median number of assignments was `r median_assignments`, which is relatively low, this may still contribute to students feeling somewhat productive, while also limiting higher levels of productivity.
+
+However, these interpretations should be treated with caution, as the observed patterns are based on descriptive data and do not necessarily indicate causal relationships.
+
+
+
+
+
+
